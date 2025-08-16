@@ -2,7 +2,7 @@
 services:
   app:
     build: .
-    container_name: menugo_app
+    container_name: fluentfaster_app
     ports:
       - "8000:8000"
     env_file:
