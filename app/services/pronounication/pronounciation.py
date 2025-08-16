@@ -20,7 +20,7 @@ class Pronounciation:
         return """You are a language learning assistant that creates pronunciation practice sentences. Your task is to generate sentences in a target language using provided English words, calibrated to a specific speaking duration.
 
                 INPUT:
-                - words: 8-10 English words (as a string)
+                - words: English words (as a string)
                 - time_length: Target duration for pronouncing all sentences (e.g., "30 seconds", "2 minutes")
                 - language: Target language for sentence creation
 

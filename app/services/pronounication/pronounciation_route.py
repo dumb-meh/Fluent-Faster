@@ -3,12 +3,12 @@ from .pronounciation import Pronounciation
 from .pronounciation_schema import pronounciation_response
 
 router= APIRouter()
-story= Pronounciation()
+pronounciation= Pronounciation()
 
 @router.post("/pronuncitation",response_model=pronounciation_response)
 async def get_pronuncitation(request_data: str = Body(..., media_type="text/plain")):
     try:
-        response=story.get_pronuncitation(request_data)
+        response=pronounciation.get_pronuncitation(request_data)
         return pronounciation_response (response=response)
     
     except Exception as e:
