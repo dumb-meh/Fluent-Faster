@@ -1,0 +1,80 @@
+import os
+import json
+import openai
+from dotenv import load_dotenv
+from .pronounciation_schema import pronounciation_response
+
+load_dotenv ()
+
+class Pronounciation:
+    def __init__(self):
+        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+    
+    def get_pronuncitation(self, input_data:str)->pronounciation_response:
+        prompt=self.create_prompt()
+        data=input_data
+        response=self.get_openai_response (prompt,data)
+        return response
+    
+    def create_prompt(self) -> str:
+        return """You are a language learning assistant that creates pronunciation practice sentences. Your task is to generate sentences in a target language using provided English words, calibrated to a specific speaking duration.
+
+                INPUT:
+                - words: 8-10 English words (as a string)
+                - time_length: Target duration for pronouncing all sentences (e.g., "30 seconds", "2 minutes")
+                - language: Target language for sentence creation
+
+                OUTPUT: A list of sentence pairs in the target language that:
+                1. Incorporate ALL the provided English words naturally
+                2. Are grammatically correct in the target language
+                3. Have a total speaking time that matches the requested time_length
+                4. Are appropriate for pronunciation practice
+                5. Include both the target language sentence AND its English translation for comprehension
+
+                TIMING GUIDELINES:
+                - Average speaking pace: ~150-180 words per minute (2.5-3 words per second)
+                - Adjust sentence complexity based on target language difficulty
+                - For beginners: slower pace, simpler sentences
+                - For advanced: normal pace, more complex structures
+
+                SENTENCE CREATION RULES:
+                1. Use each English word at least once across all sentences
+                2. Create natural, meaningful sentences (avoid forced word combinations)
+                3. Vary sentence length and structure for engaging practice
+                4. Include a mix of:
+                - Simple declarative sentences
+                - Questions
+                - Compound sentences (when appropriate)
+                5. Ensure sentences flow logically when read together
+                6. Make sentences relevant and interesting to maintain engagement
+
+                LANGUAGE-SPECIFIC CONSIDERATIONS:
+                - Adapt to target language grammar and syntax
+                - Use appropriate verb tenses and conjugations
+                - Include relevant cultural context when natural
+                - For languages with different word order, prioritize natural flow over literal translation
+
+                QUALITY CHECKS:
+                - Verify all English words are used
+                - Estimate total speaking time matches request
+                - Ensure grammatical accuracy
+                - Check for natural pronunciation flow
+
+                EXAMPLE OUTPUT FORMAT:
+                [
+                    {"target_language": "Sentence 1 in target language", "english": "Sentence 1 in English"},
+                    {"target_language": "Sentence 2 in target language", "english": "Sentence 2 in English"},
+                    {"target_language": "Sentence 3 in target language", "english": "Sentence 3 in English"}
+                ]
+
+                Now generate pronunciation practice sentences using the provided words, target duration, and language."""
+    
+    def get_gemini_response (self, prompt:str, data:str)->str:
+        completion =self.client.chat.completions.create(
+            model="gemini-2.5-flash",
+            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
+            temperature=0.7            
+        )
+        return completion.choices[0].message.content
+    
+
