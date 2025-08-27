@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from typing import List, Optional, Any
 
-class pronounciation_request(BaseModel):
+class pronunciation_request(BaseModel):
     words: str
     time_length:str
     language:str
 
-class pronounciation_response(BaseModel):
+class pronunciation_response(BaseModel):
     create_sentence: List[Any]
