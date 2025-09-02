@@ -1,30 +1,36 @@
-from fastapi import APIRouter,HTTPException,Body
-import os
-import json
-import openai
-from dotenv import load_dotenv
-router= APIRouter()
-load_dotenv ()
+from fastapi import APIRouter, HTTPException, Form
 
-@router.post("/utils/translate")
-async def get_recall(request_data: str = Body(..., media_type="text/plain")):
-    api_key=os.getenv("GEMINI_API_KEY")
-    
+router = APIRouter()
 
-
-
-
-class Pronunciation:
-    def __init__(self):
-        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
-    
-    def get_pronunciation(self, input_data:str)->pronounciation_response:
-        prompt=self.create_prompt()
-        completion =self.client.chat.completions.create(
-            model="gemini-2.5-flash",
-            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
-            temperature=0.7            
+@router.post("/translate")
+async def translate_text(
+    text: str = Form(...),
+    language: str = Form(...)
+):
+    try:
+        prompt = (
+            f"You are a translation assistant.\n"
+            f"Translate the following sentence to {language}.\n"
+            f"Return ONLY the translation in JSON format like this:\n"
+            f'{{"translated": "<translated sentence>"}}'
         )
-        return completion.choices[0].message.content
-    
 
+        content = f"Translate this: {text}"
+
+        completion = self.client.chat.completions.create(
+            model="gemini-2.5-flash",
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": content}
+            ],
+            temperature=0.5
+        )
+        response_text = completion.choices[0].message.content
+
+        import json
+        response_json = json.loads(response_text)
+
+        return response_json
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
