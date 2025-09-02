@@ -1,3 +1,4 @@
+# app/core/config.py
 import os
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -6,6 +7,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    OPENAI_API_KEY: str
+    GEMINI_API_KEY: str
+    AZURE_SPEECH_KEY: str
+    AZURE_SPEECH_REGION: str = "eastus"
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Validate required environment variables
+        if not self.GEMINI_API_KEY:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+        if not self.AZURE_SPEECH_KEY:
+            raise ValueError("AZURE_SPEECH_KEY environment variable is required")
 
 settings = Settings()

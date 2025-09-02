@@ -2,17 +2,19 @@ from fastapi import APIRouter, HTTPException, Body, Response
 from dotenv import load_dotenv
 import os
 import azure.cognitiveservices.speech as speechsdk
-import tempfile
 
 router = APIRouter()
-load_dotenv ()
+load_dotenv()
 
-AZURE_SPEECH_REGION='eastus'
+AZURE_SPEECH_REGION = 'eastus'
 
 @router.post("/text_to_speech")
-async def text_to_speech():
+async def text_to_speech(request_data: str = Body(..., media_type="text/plain")):
     try:
-        speech_config = speechsdk.SpeechConfig(subscription=os.getenv(AZURE_SPEECH_KEY) , region=AZURE_SPEECH_REGION)
+        speech_config = speechsdk.SpeechConfig(
+            subscription=os.getenv("AZURE_SPEECH_KEY"), 
+            region=AZURE_SPEECH_REGION
+        )
         speech_config.speech_synthesis_output_format = speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
 
         auto_detect_source_lang_config = speechsdk.SpeechSynthesisAutoDetectionConfig()

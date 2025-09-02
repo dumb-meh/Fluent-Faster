@@ -13,7 +13,7 @@ class Pronunciation:
     def get_pronunciation(self, input_data:str)->pronounciation_response:
         prompt=self.create_prompt()
         data=input_data
-        response=self.get_openai_response (prompt,data)
+        response=self.get_gemini_response (prompt,data)
         return response
     
     def create_prompt(self) -> str:

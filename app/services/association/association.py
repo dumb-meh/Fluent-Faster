@@ -4,16 +4,16 @@ import openai
 from dotenv import load_dotenv
 from .association_schema import association_response
 
-load_dotenv ()
+load_dotenv()
 
 class Association:
     def __init__(self):
-        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client = openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
     
-    def get_association(self, input_data:str)->association_response:
-        prompt=self.create_prompt()
-        data=input_data
-        response=self.get_openai_response (prompt,data)
+    def get_association(self, input_data: str) -> association_response:
+        prompt = self.create_prompt()
+        data = input_data
+        response = self.get_gemini_response(prompt, data)
         return response
     
     def create_prompt(self) -> str:
@@ -49,12 +49,10 @@ class Association:
 
                 Now create a mnemonic association for the given words."""
     
-    def get_gemini_response (self, prompt:str, data:str)->str:
-        completion =self.client.chat.completions.create(
+    def get_gemini_response(self, prompt: str, data: str) -> str:
+        completion = self.client.chat.completions.create(
             model="gemini-2.5-flash",
-            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
+            messages=[{"role": "system", "content": prompt}, {"role": "user", "content": data}],
             temperature=0.7            
         )
         return completion.choices[0].message.content
-    
-

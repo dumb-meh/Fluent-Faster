@@ -1,6 +1,11 @@
 from fastapi import APIRouter, HTTPException, Form
+import openai
+import os
+from dotenv import load_dotenv
+import json
 
 router = APIRouter()
+load_dotenv()
 
 @router.post("/translate")
 async def translate_text(
@@ -8,6 +13,8 @@ async def translate_text(
     language: str = Form(...)
 ):
     try:
+        client = openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        
         prompt = (
             f"You are a translation assistant.\n"
             f"Translate the following sentence to {language}.\n"
@@ -17,8 +24,8 @@ async def translate_text(
 
         content = f"Translate this: {text}"
 
-        completion = self.client.chat.completions.create(
-            model="gemini-2.5-flash",
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": content}
@@ -26,8 +33,6 @@ async def translate_text(
             temperature=0.5
         )
         response_text = completion.choices[0].message.content
-
-        import json
         response_json = json.loads(response_text)
 
         return response_json
