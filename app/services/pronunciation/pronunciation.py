@@ -1,16 +1,16 @@
 import os
 import json
-import openai
+import gemini
 from dotenv import load_dotenv
-from .pronunciation_schema import pronounciation_response
+from .pronunciation_schema import pronunciation_response,pronunciation_request
 
 load_dotenv ()
 
 class Pronunciation:
     def __init__(self):
-        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client=gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
     
-    def get_pronunciation(self, input_data:str)->pronounciation_response:
+    def get_pronunciation(self, input_data=pronunciation_request)->pronunciation_response:
         prompt=self.create_prompt()
         data=input_data
         response=self.get_gemini_response (prompt,data)

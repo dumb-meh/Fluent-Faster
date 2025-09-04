@@ -1,16 +1,16 @@
 import os
 import json
-import openai
+import gemini
 from dotenv import load_dotenv
-from .recall_schema import recall_response
+from .recall_schema import recall_response,recall_request
 
 load_dotenv ()
 
 class Recall:
     def __init__(self):
-        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
     
-    def get_recall(self, input_data:str)->recall_response:
+    def get_recall(self, input_data=recall_request)->recall_response:
         prompt=self.create_prompt()
         data=input_data
         response=self.get_gemini_response (prompt,data)

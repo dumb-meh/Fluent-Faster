@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Form
-import openai
+import gemini
 import os
 from dotenv import load_dotenv
 import json
@@ -13,8 +13,8 @@ async def translate_text(
     language: str = Form(...)
 ):
     try:
-        client = openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
-        
+        client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+
         prompt = (
             f"You are a translation assistant.\n"
             f"Translate the following sentence to {language}.\n"

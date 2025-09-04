@@ -1,16 +1,15 @@
 import os
 import json
-import openai
+import gemini
 from dotenv import load_dotenv
-from .shadowing_schema import shadowing_response
-
+from .shadowing_schema import shadowing_response,shadowing_request
 load_dotenv ()
 
 class Shadowing:
     def __init__(self):
-        self.client=openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client=gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
     
-    def get_shadowing(self, input_data:str)->shadowing_response:
+    def get_shadowing(self, input_data=shadowing_request)->shadowing_response:
         prompt=self.create_prompt()
         data=input_data
         response=self.get_gemini_response (prompt,data)

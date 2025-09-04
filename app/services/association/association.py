@@ -1,6 +1,6 @@
 import os
 import json
-import openai
+import gemini
 from dotenv import load_dotenv
 from .association_schema import association_response
 
@@ -8,7 +8,7 @@ load_dotenv()
 
 class Association:
     def __init__(self):
-        self.client = openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
     
     def get_association(self, input_data: str) -> association_response:
         prompt = self.create_prompt()
@@ -31,7 +31,6 @@ class Association:
                 TECHNIQUES TO USE:
                 - Visual imagery (create a scene you can picture)
                 - Emotional connections (funny, surprising, or dramatic scenarios)
-                - Sound associations (rhymes, alliteration, similar sounds)
                 - Story narratives (brief but memorable plots)
                 - Exaggeration and absurdity (makes it more memorable)
                 - Personal or relatable situations

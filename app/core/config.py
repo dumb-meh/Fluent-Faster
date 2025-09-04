@@ -1,4 +1,3 @@
-# app/core/config.py
 import os
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -19,7 +18,7 @@ class Settings(BaseSettings):
         super().__init__(**kwargs)
         # Validate required environment variables
         if not self.GEMINI_API_KEY:
-            raise ValueError("OPENAI_API_KEY environment variable is required")
+            raise ValueError("GEMINI_API_KEY environment variable is required")
         if not self.AZURE_SPEECH_KEY:
             raise ValueError("AZURE_SPEECH_KEY environment variable is required")
 

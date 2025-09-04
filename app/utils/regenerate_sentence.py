@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Body
 import json
-import openai
+import gemini
 import os
 from dotenv import load_dotenv
 
@@ -10,8 +10,8 @@ load_dotenv()
 @router.post("/regenerate_sentence")
 async def regenerate_sentence(request_data: str = Body(..., media_type="text/plain")):
     try:
-        client = openai.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
-        
+        client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+
         prompt = (
             "You will be given an English sentence and its translation in another language.\n"
             "Make the foreign sentence more advanced or complex, and give a new English translation for it.\n"
@@ -26,7 +26,7 @@ async def regenerate_sentence(request_data: str = Body(..., media_type="text/pla
             ],
             temperature=0.7
         )
-        
+
         response_text = completion.choices[0].message.content
         response_json = json.loads(response_text)
 

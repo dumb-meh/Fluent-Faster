@@ -4,7 +4,8 @@ pydantic
 pydantic-settings
 python-dotenv
 groq
-openai
+pillow
+google-generativeai
 pillow
 requests
 python-multipart
