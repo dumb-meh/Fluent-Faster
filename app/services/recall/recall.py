@@ -1,20 +1,21 @@
 import os
 import json
-import gemini
+import google.generativeai as genai
 from dotenv import load_dotenv
-from .recall_schema import recall_response,recall_request
+from .recall_schema import recall_response, recall_request
 
-load_dotenv ()
+load_dotenv()
 
 class Recall:
     def __init__(self):
-        self.client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_recall(self, input_data=recall_request)->recall_response:
-        prompt=self.create_prompt()
-        data=input_data
-        response=self.get_gemini_response (prompt,data)
-        return response
+    def get_recall(self, input_data=recall_request) -> recall_response:
+        prompt = self.create_prompt()
+        full_prompt = f"{prompt}\n\nInput: {input_data}"
+        response = self.model.generate_content(full_prompt)
+        return response.text
     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates recall practice sentences. Your task is to generate a specific number of sentences in a target language using provided English words to help users practice vocabulary recall and retention.
@@ -22,7 +23,7 @@ class Recall:
                 INPUT:
                 - words: English words (as a string)
                 - language: Target language for sentence creation
-                - number_of_sentences: Exact number of sentences to create (e.g., "5", "8", "12")
+                - number of sentences: Exact number of sentences to create (e.g., "5", "8", "12")
 
                 OUTPUT: A list of sentence pairs in the target language that:
                 1. Incorporate ALL the provided English words naturally across the sentences
@@ -73,12 +74,5 @@ class Recall:
 
                 Now generate the exact number of recall practice sentences using the provided words and target language."""
     
-    def get_gemini_response (self, prompt:str, data:str)->str:
-        completion =self.client.chat.completions.create(
-            model="gemini-2.5-flash",
-            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
-            temperature=0.7            
-        )
-        return completion.choices[0].message.content
-    
+
 

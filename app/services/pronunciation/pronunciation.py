@@ -1,20 +1,21 @@
 import os
 import json
-import gemini
+import google.generativeai as genai
 from dotenv import load_dotenv
-from .pronunciation_schema import pronunciation_response,pronunciation_request
+from .pronunciation_schema import pronunciation_response, pronunciation_request
 
-load_dotenv ()
+load_dotenv()
 
 class Pronunciation:
     def __init__(self):
-        self.client=gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_pronunciation(self, input_data=pronunciation_request)->pronunciation_response:
-        prompt=self.create_prompt()
-        data=input_data
-        response=self.get_gemini_response (prompt,data)
-        return response
+    def get_pronunciation(self, input_data=pronunciation_request) -> pronunciation_response:
+        prompt = self.create_prompt()
+        full_prompt = f"{prompt}\n\nInput: {input_data}"
+        response = self.model.generate_content(full_prompt)
+        return response.text
     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates pronunciation practice sentences. Your task is to generate sentences in a target language using provided English words, calibrated to a specific speaking duration.
@@ -68,13 +69,6 @@ class Pronunciation:
                 ]
 
                 Now generate pronunciation practice sentences using the provided words, target duration, and language."""
-    
-    def get_gemini_response (self, prompt:str, data:str)->str:
-        completion =self.client.chat.completions.create(
-            model="gemini-2.5-flash",
-            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
-            temperature=0.7            
-        )
-        return completion.choices[0].message.content
+ 
     
 

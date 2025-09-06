@@ -6,7 +6,7 @@ import azure.cognitiveservices.speech as speechsdk
 router = APIRouter()
 load_dotenv()
 
-AZURE_SPEECH_REGION = 'eastus'
+AZURE_SPEECH_REGION= os.getenv("AZURE_SPEECH_REGION") 
 
 @router.post("/text_to_speech")
 async def text_to_speech(request_data: str = Body(..., media_type="text/plain")):

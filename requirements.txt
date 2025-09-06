@@ -6,8 +6,7 @@ python-dotenv
 groq
 pillow
 google-generativeai
-pillow
 requests
 python-multipart
 typing
-azure.cognitiveservices.speech
+azure-cognitiveservices-speech

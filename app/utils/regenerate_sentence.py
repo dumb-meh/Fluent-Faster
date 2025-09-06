@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Body
-import json
-import gemini
 import os
+import json
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 router = APIRouter()
 load_dotenv()
@@ -10,34 +10,36 @@ load_dotenv()
 @router.post("/regenerate_sentence")
 async def regenerate_sentence(request_data: str = Body(..., media_type="text/plain")):
     try:
-        client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
         prompt = (
-            "You will be given an English sentence and its translation in another language.\n"
-            "Make the foreign sentence more advanced or complex, and give a new English translation for it.\n"
-            "Return the result as a JSON object with two keys: 'english' and 'foreign'."
+            "You will be given a sentence in a foreign language.\n"
+            "Your task is to rewrite the sentence to make it more advanced or complex, and then provide an English translation of the new version.\n"
+            "Respond ONLY with a valid JSON object using this exact structure:\n"
+            '{ "foreign": "New sentence in original language", "english": "Translation in English" }'
         )
 
-        completion = client.chat.completions.create(
-            model="gemini-2.5-flash", 
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": request_data}
-            ],
-            temperature=0.7
-        )
+        full_prompt = f"{prompt}\n\nInput: {request_data}"
+        response = model.generate_content(full_prompt)
 
-        response_text = completion.choices[0].message.content
-        response_json = json.loads(response_text)
+        # Clean up output from code fences like ```json ... ```
+        output = response.text.strip()
+        if output.startswith("```"):
+            # Remove Markdown code fence
+            output = output.strip("`")  # Removes all backticks
+            lines = output.splitlines()
+            if lines[0].startswith("json"):
+                lines = lines[1:]  # Remove the "json" language identifier
+            output = "\n".join(lines).strip()
+
+        # Attempt to parse cleaned JSON
+        try:
+            response_json = json.loads(output)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail=f"Could not parse model output as JSON: {output}")
 
         return response_json
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-
-
-
-
-

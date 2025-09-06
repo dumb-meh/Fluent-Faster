@@ -1,20 +1,20 @@
 import os
 import json
-import gemini
+import google.generativeai as genai
 from dotenv import load_dotenv
-from .association_schema import association_response
 
 load_dotenv()
 
 class Association:
     def __init__(self):
-        self.client = gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_association(self, input_data: str) -> association_response:
+    def get_association(self, input_data: str) -> str:
         prompt = self.create_prompt()
-        data = input_data
-        response = self.get_gemini_response(prompt, data)
-        return response
+        full_prompt = f"{prompt}\n\nInput: {input_data}"
+        response = self.model.generate_content(full_prompt)
+        return response.text
     
     def create_prompt(self) -> str:
         return """You are a creative mnemonic association generator. Your task is to create memorable, vivid connections between two given words to help with memorization.
@@ -47,11 +47,18 @@ class Association:
                 - Use quotes or emphasis to highlight the key words when helpful
 
                 Now create a mnemonic association for the given words."""
-    
-    def get_gemini_response(self, prompt: str, data: str) -> str:
-        completion = self.client.chat.completions.create(
-            model="gemini-2.5-flash",
-            messages=[{"role": "system", "content": prompt}, {"role": "user", "content": data}],
-            temperature=0.7            
-        )
-        return completion.choices[0].message.content
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

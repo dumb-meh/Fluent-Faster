@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
 from app.services.pronunciation.pronunciation_route import router as pronunciation_router 
 from app.services.recall.recall_route import router as recall_router
 from app.services.association.association_route import router as association_router

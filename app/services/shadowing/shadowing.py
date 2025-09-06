@@ -1,19 +1,21 @@
 import os
 import json
-import gemini
+import google.generativeai as genai
 from dotenv import load_dotenv
-from .shadowing_schema import shadowing_response,shadowing_request
-load_dotenv ()
+from .shadowing_schema import shadowing_response, shadowing_request
+
+load_dotenv()
 
 class Shadowing:
     def __init__(self):
-        self.client=gemini.OpenAI(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_shadowing(self, input_data=shadowing_request)->shadowing_response:
-        prompt=self.create_prompt()
-        data=input_data
-        response=self.get_gemini_response (prompt,data)
-        return response
+    def get_shadowing(self, input_data: str) -> str:
+        prompt = self.create_prompt()
+        full_prompt = f"{prompt}\n\nInput: {input_data}"
+        response = self.model.generate_content(full_prompt)
+        return response.text
     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates shadowing practice sentences. Your task is to generate sentences optimized for shadowing technique - where learners listen to and simultaneously repeat target language sentences to improve pronunciation, rhythm, and fluency.
@@ -78,13 +80,5 @@ class Shadowing:
                 ]
 
                 Now generate shadowing practice sentences that will help learners develop natural pronunciation, rhythm, and fluency in the target language."""
-    
-    def get_gemini_response (self, prompt:str, data:str)->str:
-        completion =self.client.chat.completions.create(
-            model="gemini-2.5-flash",
-            messages=[{"role":"system", "content": prompt},{"role":"user", "content": data}],
-            temperature=0.7            
-        )
-        return completion.choices[0].message.content
-    
+
 
