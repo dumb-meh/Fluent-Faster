@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.pronunciation.pronunciation_route import router as pronunciation_router 
+from app.services.custom_phrases.custom_phrases_route import router as custom_phrases_router 
 from app.services.recall.recall_route import router as recall_router
 from app.services.association.association_route import router as association_router
 from app.services.shadowing.shadowing_route import router as shadowing_router
@@ -18,10 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+app.include_router(association_router, prefix="/api")
+app.include_router(custom_phrases_router  , prefix="/api")
 app.include_router(pronunciation_router , prefix="/api")
 app.include_router(recall_router, prefix="/api")
-app.include_router(association_router, prefix="/api")
 app.include_router(shadowing_router, prefix="/api")
 app.include_router(regenerate_sentence_router, prefix="/api")
 app.include_router(text_to_speech_router, prefix="/api")

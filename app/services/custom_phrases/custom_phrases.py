@@ -2,7 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from dotenv import load_dotenv
-from .custom_phrases import custom_phrases_response, custom_phrases_request
+from .custom_phrases_schema import custom_phrases_response, custom_phrases_request
 
 load_dotenv()
 
@@ -11,72 +11,62 @@ class Phrases:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def create_phrases (self, input_data=custom_phrases_request) -> custom_phrases_response:
-        prompt = self.create_prompt()
-        full_prompt = f"{prompt}\n\nInput: {input_data}"
-        response = self.model.generate_content(full_prompt)
-        return response.text
+    def create_phrases(self, input_data: custom_phrases_request) -> custom_phrases_response:
+        prompt = self.create_prompt(input_data)
+        response = self.model.generate_content(prompt)
+        print(response.text)
+        try:
+            text = response.text.replace('```json', '').replace('```', '').strip()
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse response as JSON: {e}")
     
-    def create_prompt(self) -> str:
-        return """ You are an expert language learning assistant that creates conversational phrases for practice. Based on the provided topic and user information, generate natural, practical phrases that learners can use in real conversations.
+    def create_prompt(self, input_data: custom_phrases_request) -> str:
+        return f"""
+                You are an AI assistant that creates follow-up content for language learning. Based on the user's data, generate exactly {input_data.number_of_question} relevant, natural-sounding outputs. **You MUST return a valid JSON format as described below.**
 
-                    INSTRUCTIONS:
-                    1. Generate phrases based on the topic provided
-                    2. Use the user_info to personalize and contextualize the phrases
-                    3. Create realistic, conversational language appropriate for the user's age and gender
-                    4. Make phrases practical and commonly used in real-life situations
-                    5. Vary sentence structures and complexity appropriately
-                    6. Default to 4 phrases unless a specific number is mentioned in user_info
+                USER INFORMATION:
+                - Topic: {input_data.topic}
+                - User Details: {json.dumps(input_data.user_info)}
 
-                    SPECIAL HANDLING FOR TOPICS:
 
-                    **Dialogues Topic:**
-                    - Create a full conversation between the user and the specified person
-                    - Use the conversation context provided
-                    - Generate the requested number of phrases (conversation turns)
-                    - Alternate between the user and the other person
-                    - Make it feel natural and realistic
+                IMPORTANT FORMAT RULE:
+                If topic == "dialogue":
+                - Return a JSON array of dictionaries (like a conversation)
+                - Alternate between "user" and another speaker (e.g., "boss", "friend", etc.)
+                - Each dict must have only one line of dialogue per speaker:
+                Example:
+                [
+                    {{"user": "Hi, I wanted to talk about the project."}},
+                    {{"boss": "Sure, what's going on?"}}
+                ]
 
-                    **Other Topics (About Me, Work, Family, Hobbies, Travel, Love, Food, Custom):**
-                    - Generate phrases the user would say when discussing this topic
-                    - Make them personal based on the user's information
-                    - Include both questions they might ask and statements they might make
-                    - Focus on natural, conversational language
+                Else:
+                - Return a JSON array of strings:
+                Example:
+                [
+                    "What exactly is blocking the project?",
+                    "How have you approached this with your boss before?"
+                ]
 
-                    OUTPUT FORMAT:
-                    Return a list of dictionaries where each dictionary contains:
-                    - "phrase": The conversational phrase or statement
-                    - "context": Brief explanation of when/how to use this phrase (optional for dialogues)
+                INSTRUCTIONS:
+                1. Generate exactly {input_data.number_of_question} follow-up outputs
+                2. Keep it natural and contextually relevant
+                3. Use the user-provided information to personalize your content
+                4. DO NOT return anything outside the specified JSON format
+                5. Do not include explanations, prefaces, or code
+                6. DO NOT use placeholders like [Name], [Thing], [Technique]. Always use realistic, fully written examples.
 
-                    For Dialogues topic, use:
-                    - "speaker": Either "user" or the other person's role
-                    - "phrase": What that person says
+                QUESTION STRATEGY:
+                - Clarify or expand on the user’s responses
+                - Ask about experiences, preferences, goals, or comparisons
+                - Be conversational and realistic
+                - For dialogue: simulate a natural back-and-forth interaction
 
-                    EXAMPLES:
+                Begin generating based on the input above.
+            """
 
-                    Topic: "Hobbies", User: 25-year-old male who plays guitar
-                    Output: [
-                    {"phrase": "I've been playing guitar for about 5 years now", "context": "When someone asks about your hobbies"},
-                    {"phrase": "Do you play any instruments yourself?", "context": "To continue the conversation about music"},
-                    {"phrase": "I usually practice in the evenings after work", "context": "When explaining your routine"},
-                    {"phrase": "My favorite genre to play is probably rock or blues", "context": "When discussing musical preferences"}
-                    ]
 
-                    Topic: "Dialogues", Conversation with: mom, About: asking for money, 3 phrases, User: 20-year-old female
-                    Output: [
-                    {"speaker": "user", "phrase": "Mom, I was wondering if I could borrow some money for textbooks this semester?"},
-                    {"speaker": "mom", "phrase": "How much do you need, and when can you pay me back?"},
-                    {"speaker": "user", "phrase": "I need about $200, and I can pay you back from my part-time job by the end of the month"}
-                    ]
-
-                    Generate phrases that are:
-                    - Natural and conversational
-                    - Appropriate for the user's demographic
-                    - Relevant to real-life situations
-                    - Varied in structure and complexity
-                    - Culturally appropriate and commonly used
-
-                    Begin generating based on the provided topic and user_info."""
     
 
 
