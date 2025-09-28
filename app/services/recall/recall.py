@@ -3,6 +3,7 @@ import json
 import google.generativeai as genai
 from dotenv import load_dotenv
 from .recall_schema import recall_response, recall_request
+from typing import List
 
 load_dotenv()
 
@@ -11,11 +12,21 @@ class Recall:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_recall(self, input_data=recall_request) -> recall_response:
+    def get_recall(self, input_data: recall_request) -> List[recall_response]:
         prompt = self.create_prompt()
-        full_prompt = f"{prompt}\n\nInput: {input_data}"
+        full_prompt = f"{prompt}\n\nInput: words: {input_data.words}, language: {input_data.language}, number_of_sentences: {input_data.number_of_sentences}"
         response = self.model.generate_content(full_prompt)
-        return response.text
+        print(response.text)
+        text = response.text
+        if text.startswith("```json"):
+            text = text[len("```json"):].strip()
+        elif text.startswith("```"):
+            text = text[len("```"):].strip()
+        if text.endswith("```"):
+            text = text[:-3].strip()
+        data = json.loads(text)
+        
+        return data
     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates recall practice sentences. Your task is to generate a specific number of sentences in a target language using provided English words to help users practice vocabulary recall and retention.
@@ -72,7 +83,7 @@ class Recall:
                     {"target_language": "Sentence 3 in target language", "english": "Sentence 3 in English"}
                 ]
 
-                Now generate the exact number of recall practice sentences using the provided words and target language."""
+                Return only the JSON list in the exact format shown above, without any additional text, explanations, or formatting."""
     
 
 

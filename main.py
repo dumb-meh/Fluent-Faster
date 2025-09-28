@@ -9,6 +9,7 @@ from app.services.shadowing.shadowing_route import router as shadowing_router
 from app.utils.regenerate_sentence import router as regenerate_sentence_router
 from app.utils.text_to_speech import router as text_to_speech_router
 from app.utils.translate import router as translate_router
+
 app = FastAPI()
 
 app.add_middleware(

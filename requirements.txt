@@ -10,3 +10,4 @@ requests
 python-multipart
 typing
 azure-cognitiveservices-speech
+google-cloud-storage
