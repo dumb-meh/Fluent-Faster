@@ -7,6 +7,7 @@ import uuid
 import time
 from google.cloud import storage
 from google.oauth2 import service_account
+from datetime import datetime, timedelta
 import io
 
 router = APIRouter()
@@ -58,13 +59,10 @@ async def text_to_speech(request: TTSRequest):
         response = requests.post(TTS_ENDPOINT, headers=headers, data=ssml.encode("utf-8"))
 
         if response.status_code == 200:
-            # Initialize Google Cloud Storage client
             try:
-                # Try to use default credentials first (for Cloud Run)
                 client = storage.Client()
-            except Exception:
-                # Fallback to service account if needed
-                client = storage.Client()
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to initialize GCS client: {str(e)}")
             
             bucket_name = os.getenv("BUCKET_NAME")
             if not bucket_name:
@@ -72,23 +70,19 @@ async def text_to_speech(request: TTSRequest):
             
             bucket = client.bucket(bucket_name)
             
-            # Generate unique filename
             timestamp = str(int(time.time()))
             unique_id = str(uuid.uuid4())[:8]
             filename = f"temp_audio_file/tts_{timestamp}_{unique_id}.wav"
             
-            # Upload to Google Cloud Storage
             blob = bucket.blob(filename)
             blob.upload_from_string(
                 response.content,
                 content_type="audio/wav"
             )
             
-            # Make the blob publicly accessible
-            blob.make_public()
+            encoded_filename = filename.replace("/", "%2F")
+            audio_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_filename}?alt=media"
             
-            # Return public URL to the audio file
-            audio_url = blob.public_url
             return {"audio_url": audio_url, "filename": filename.split("/")[-1]}
         else:
             raise HTTPException(status_code=response.status_code, detail=f"TTS request failed: {response.text}")
