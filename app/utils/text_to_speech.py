@@ -70,8 +70,8 @@ async def text_to_speech(request: TTSRequest):
             
             bucket = client.bucket(bucket_name)
             
-            timestamp = str(int(time.time()))
-            unique_id = str(uuid.uuid4())[:8]
+            timestamp = str(int(time.time() * 1000))  # Use milliseconds for better uniqueness
+            unique_id = str(uuid.uuid4())[:12]  # Longer unique ID
             filename = f"temp_audio_file/tts_{timestamp}_{unique_id}.wav"
             
             blob = bucket.blob(filename)
