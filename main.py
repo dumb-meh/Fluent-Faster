@@ -1,6 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+import os
 from app.services.pronunciation.pronunciation_route import router as pronunciation_router 
 from app.services.custom_phrases.custom_phrases_route import router as custom_phrases_router 
 from app.services.recall.recall_route import router as recall_router
@@ -19,6 +22,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static file endpoint for audio files (backup option)
+@app.get("/temp_audio/{file_path:path}")
+async def serve_audio_file(file_path: str):
+    """Serve audio files from the mounted volume"""
+    full_path = f"/temp_audio/{file_path}"
+    
+    if not os.path.exists(full_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=full_path,
+        media_type="audio/wav",
+        filename=os.path.basename(file_path)
+    )
 
 app.include_router(association_router, prefix="/api")
 app.include_router(custom_phrases_router  , prefix="/api")

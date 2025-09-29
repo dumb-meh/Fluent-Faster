@@ -7,5 +7,8 @@ class shadowing_request(BaseModel):
     number_of_sentences: str
 
 class shadowing_response(BaseModel):
-    response: str  
+    target_language: str
+    english: str
+    english_url: str
+    target_language_url: str
 
