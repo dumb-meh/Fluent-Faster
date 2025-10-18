@@ -7,7 +7,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install base packages first
+RUN pip install --no-cache-dir --timeout=600 --retries=5 -r requirements.txt
+
+# Install the large Azure package separately with extended timeout and more retries
+RUN pip install --no-cache-dir --timeout=1200 --retries=15 azure-cognitiveservices-speech
 
 COPY . .
 
