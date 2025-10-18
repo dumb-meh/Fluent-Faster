@@ -7,4 +7,7 @@ class pronunciation_request(BaseModel):
     language: str
 
 class pronunciation_response(BaseModel):
-    response: str 
+    target_language: str
+    english: str
+    english_url: str
+    target_language_url: str

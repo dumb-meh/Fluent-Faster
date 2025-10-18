@@ -2,6 +2,8 @@ import os
 import json
 import google.generativeai as genai
 from dotenv import load_dotenv
+
+from app.utils.text_to_speech import generate_tts_direct,get_language_code, ThreadSafeCounter
 from .recall_schema import recall_response, recall_request
 from typing import List
 import time
@@ -13,15 +15,7 @@ from google.cloud import storage
 load_dotenv()
 
 
-class ThreadSafeCounter:
-    def __init__(self):
-        self._value = 0
-        self._lock = threading.Lock()
-    
-    def get_next(self):
-        with self._lock:
-            self._value += 1
-            return self._value
+
 
 counter = ThreadSafeCounter()
 
@@ -35,7 +29,6 @@ class Recall:
             prompt = self.create_prompt()
             full_prompt = f"{prompt}\n\nInput: words: {input_data.words}, language: {input_data.language}, number_of_sentences: {input_data.number_of_sentences}"
             response = self.model.generate_content(full_prompt)
-            print(response.text)
             text = response.text
             if text.startswith("```json"):
                 text = text[len("```json"):].strip()
@@ -51,7 +44,7 @@ class Recall:
             for i, item in enumerate(data):
                 base_timestamp = int(time.time())
                 counter_val = counter.get_next()
-                target_language_code = self.get_language_code(input_data.language)
+                target_language_code =get_language_code(input_data.language)
                 
                 english_task = {
                     'text': item['english'],
@@ -80,7 +73,7 @@ class Recall:
             # Process TTS requests sequentially
             for task_type, task, index in tts_tasks:
                 try:
-                    audio_url = self.call_tts_endpoint(task)
+                    audio_url = generate_tts_direct(task,"recall")
                     
                     if audio_url:
                         if task_type == 'english':
@@ -112,109 +105,9 @@ class Recall:
                     'english_url': '',
                     'target_language_url': ''
                 }]
-    
-    def call_tts_endpoint(self, task: dict) -> str:
-        """
-        Generate TTS directly using Azure Speech API
-        """
-        try:
-            return self.generate_tts_direct(task)
-        except Exception:
-            return ""
-
-    def generate_tts_direct(self, task: dict) -> str:
-        """
-        Generate TTS directly using Azure Speech API (no HTTP calls)
-        """
-        try:
-            azure_key = os.getenv("AZURE_SPEECH_KEY")
-            azure_region = os.getenv("AZURE_SPEECH_REGION")
-            
-            if not azure_key or not azure_region:
-                return ""
-
-            token_endpoint = f"https://{azure_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
-            tts_endpoint = f"https://{azure_region}.tts.speech.microsoft.com/cognitiveservices/v1"
-            
-            headers = {"Ocp-Apim-Subscription-Key": azure_key}
-            token_response = requests.post(token_endpoint, headers=headers, timeout=10)
-            
-            if token_response.status_code != 200:
-                return ""
-            
-            token = token_response.text
-
-            ssml = f"""
-            <speak version='1.0' xml:lang='{task['language']}'>
-                <voice xml:lang='{task['language']}' xml:gender='Female' name='{task['voice_name']}'>
-                    {task['text']}
-                </voice>
-            </speak>
-            """
-
-            tts_headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/ssml+xml",
-                "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
-                "User-Agent": "fastapi-tts-app"
-            }
-            
-            tts_response = requests.post(tts_endpoint, headers=tts_headers, data=ssml.encode("utf-8"), timeout=15)
-            
-            if tts_response.status_code != 200:
-                return ""
-            
-            client = storage.Client()
-            bucket_name = os.getenv("BUCKET_NAME")
-            
-            if not bucket_name:
-                return ""
-            
-            bucket = client.bucket(bucket_name)
-            
-            timestamp = str(int(time.time() * 1000))
-            unique_id = str(uuid.uuid4())[:12]
-            filename = f"temp_audio_file/recall_{timestamp}_{unique_id}.wav"
-
-            blob = bucket.blob(filename)
-            blob.upload_from_string(
-                tts_response.content,
-                content_type="audio/wav"
-            )
-            
-            encoded_filename = filename.replace("/", "%2F")
-            audio_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_filename}?alt=media"
-            
-            return audio_url
-            
-        except Exception:
-            return ""
-    
-    def get_language_code(self, language: str) -> str:
-        """
-        Convert language names to proper language codes
-        """
-        language_mapping = {
-            "spanish": "es-ES",
-            "french": "fr-FR",
-            "german": "de-DE", 
-            "italian": "it-IT",
-            "portuguese": "pt-BR",
-            "japanese": "ja-JP",
-            "korean": "ko-KR",
-            "chinese": "zh-CN",
-            "russian": "ru-RU",
-            "arabic": "ar-SA"
-        }
-        
-        if "-" in language:
-            return language
-            
-        return language_mapping.get(language.lower(), "es-ES") 
-    
 
 
-    
+     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates recall practice sentences. Your task is to generate a specific number of sentences in a target language using provided English words to help users practice vocabulary recall and retention.
 
