@@ -56,14 +56,14 @@ class Recall:
                 english_task = {
                     'text': item['english'],
                     'language': 'en-US',
-                    'voice_name': 'en-US-ChristopherNeural',
+                    'voice_name': 'en-US-AvaMultilingualNeural',
                     'unique_id': f"{base_timestamp}_{counter_val}_{i}_en"
                 }
                 
                 target_task = {
                     'text': item['target_language'],
                     'language': target_language_code,
-                    'voice_name': self.get_voice_for_language(target_language_code),
+                    'voice_name': 'en-US-AvaMultilingualNeural',
                     'unique_id': f"{base_timestamp}_{counter_val}_{i}_tg"
                 }
                 
@@ -146,7 +146,7 @@ class Recall:
 
             ssml = f"""
             <speak version='1.0' xml:lang='{task['language']}'>
-                <voice xml:lang='{task['language']}' xml:gender='Male' name='{task['voice_name']}'>
+                <voice xml:lang='{task['language']}' xml:gender='Female' name='{task['voice_name']}'>
                     {task['text']}
                 </voice>
             </speak>
@@ -212,43 +212,6 @@ class Recall:
             
         return language_mapping.get(language.lower(), "es-ES") 
     
-    def get_voice_for_language(self, language: str) -> str:
-        """
-        Map language codes to appropriate Azure Speech voices
-        """
-        voice_mapping = {
-            "es": "es-ES-AlvaroNeural",
-            "es-ES": "es-ES-AlvaroNeural",
-            "spanish": "es-ES-AlvaroNeural",
-            "fr": "fr-FR-HenriNeural",
-            "fr-FR": "fr-FR-HenriNeural",
-            "french": "fr-FR-HenriNeural",
-            "de": "de-DE-ConradNeural",
-            "de-DE": "de-DE-ConradNeural",
-            "german": "de-DE-ConradNeural",
-            "it": "it-IT-DiegoNeural",
-            "it-IT": "it-IT-DiegoNeural",
-            "italian": "it-IT-DiegoNeural",
-            "pt": "pt-BR-AntonioNeural",
-            "pt-BR": "pt-BR-AntonioNeural",
-            "portuguese": "pt-BR-AntonioNeural",
-            "ja": "ja-JP-KeitaNeural",
-            "ja-JP": "ja-JP-KeitaNeural",
-            "japanese": "ja-JP-KeitaNeural",
-            "ko": "ko-KR-InJoonNeural",
-            "ko-KR": "ko-KR-InJoonNeural",
-            "korean": "ko-KR-InJoonNeural",
-            "zh": "zh-CN-YunxiNeural",
-            "zh-CN": "zh-CN-YunxiNeural",
-            "chinese": "zh-CN-YunxiNeural",
-            "ru": "ru-RU-DmitryNeural",
-            "ru-RU": "ru-RU-DmitryNeural",
-            "russian": "ru-RU-DmitryNeural",
-            "ar": "ar-SA-HamedNeural",
-            "ar-SA": "ar-SA-HamedNeural",
-            "arabic": "ar-SA-HamedNeural"
-        }
-        return voice_mapping.get(language.lower(), "en-US-ChristopherNeural")
 
 
     

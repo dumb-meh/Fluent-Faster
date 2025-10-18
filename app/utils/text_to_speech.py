@@ -24,6 +24,7 @@ class TTSRequest(BaseModel):
     text: str
     language: str = "en-US"
     voice_name: str = "en-US-ChristopherNeural"
+    gender: str = "Male"
 
 
 def get_token(subscription_key: str) -> str:
@@ -43,7 +44,7 @@ async def text_to_speech(request: TTSRequest):
 
         ssml = f"""
         <speak version='1.0' xml:lang='{request.language}'>
-            <voice xml:lang='{request.language}' xml:gender='Male' name='{request.voice_name}'>
+            <voice xml:lang='{request.language}' xml:gender='{request.gender}' name='{request.voice_name}'>
                 {request.text}
             </voice>
         </speak>
