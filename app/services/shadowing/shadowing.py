@@ -1,21 +1,102 @@
 import os
 import json
+import time
 import google.generativeai as genai
+from typing import List
 from dotenv import load_dotenv
 from .shadowing_schema import shadowing_response, shadowing_request
+from app.utils.text_to_speech import generate_tts_direct, get_language_code, ThreadSafeCounter
 
 load_dotenv()
 
+counter = ThreadSafeCounter()
 class Shadowing:
     def __init__(self):
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-    
-    def get_shadowing(self, input_data: str) -> str:
-        prompt = self.create_prompt()
-        full_prompt = f"{prompt}\n\nInput: {input_data}"
-        response = self.model.generate_content(full_prompt)
-        return response.text
+
+    def get_shadowing(self, input_data: shadowing_request) -> List[shadowing_response]:
+        try:
+            prompt = self.create_prompt()
+            full_prompt = f"{prompt}\n\nInput: {input_data}"
+            response = self.model.generate_content(full_prompt)
+            text = response.text
+            if text.startswith("```json"):
+                text = text[len("```json"):].strip()
+            elif text.startswith("```"):
+                text = text[len("```"):].strip()
+            if text.endswith("```"):
+                text = text[:-3].strip()
+            data = json.loads(text)
+                
+            result = []
+            tts_tasks = []
+                
+            for i, item in enumerate(data):
+                base_timestamp = int(time.time())
+                counter_val = counter.get_next()
+                target_language_code = get_language_code(input_data.language)
+                    
+                english_task = {
+                    'text': item['english'],
+                    'language': 'en-US',
+                    'voice_name': 'en-US-AvaMultilingualNeural',
+                    'unique_id': f"{base_timestamp}_{counter_val}_{i}_en"
+                }
+                    
+                target_task = {
+                    'text': item['target_language'],
+                    'language': target_language_code,
+                    'voice_name': 'en-US-AvaMultilingualNeural',
+                    'unique_id': f"{base_timestamp}_{counter_val}_{i}_tg"
+                }
+                    
+                tts_tasks.append(('english', english_task, i))
+                tts_tasks.append(('target', target_task, i))
+                    
+                result.append({
+                    'target_language': item['target_language'],
+                    'english': item['english'],
+                    'english_url': '',
+                    'target_language_url': ''
+                })
+                
+                # Process TTS requests sequentially
+                for task_type, task, index in tts_tasks:
+                    try:
+                        audio_url = generate_tts_direct(task, "pronunciation")
+                        
+                        if audio_url:
+                            if task_type == 'english':
+                                result[index]['english_url'] = audio_url
+                            else:
+                                result[index]['target_language_url'] = audio_url
+                            
+                    except Exception as e:
+                        print(f"TTS failed for {task_type} at index {index}: {str(e)}")
+                
+            return result
+                
+        except Exception as e:
+            # If we have data but TTS failed, return the sentences anyway
+            if 'data' in locals() and data:
+                result = []
+                for item in data:
+                    result.append({
+                        'target_language': item['target_language'],
+                        'english': item['english'],
+                        'english_url': '',
+                        'target_language_url': ''
+                    })
+                return result
+            else:
+                return [{
+                    'target_language': 'Error occurred',
+                    'english': 'Error occurred', 
+                    'english_url': '',
+                    'target_language_url': ''
+                }]
+
     
     def create_prompt(self) -> str:
         return """You are a language learning assistant that creates shadowing practice sentences. Your task is to generate sentences optimized for shadowing technique - where learners listen to and simultaneously repeat target language sentences to improve pronunciation, rhythm, and fluency.

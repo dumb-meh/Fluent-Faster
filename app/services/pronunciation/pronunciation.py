@@ -1,9 +1,8 @@
 import os
 import json
 import time
-import requests
-
 import uuid
+from typing import List
 import google.generativeai as genai
 from dotenv import load_dotenv
 from .pronunciation_schema import pronunciation_response, pronunciation_request
@@ -17,7 +16,7 @@ class Pronunciation:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
-    def get_pronunciation(self, input_data=pronunciation_request) -> pronunciation_response:
+    def get_pronunciation(self, input_data: pronunciation_request) -> List[pronunciation_response]:
         try:
             prompt = self.create_prompt()
             full_prompt = f"{prompt}\n\nInput: {input_data}"
