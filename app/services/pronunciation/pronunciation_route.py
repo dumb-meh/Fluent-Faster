@@ -10,7 +10,7 @@ pronunciation= Pronunciation()
 async def get_pronuncitation(request:pronunciation_request):
     try:
         response=pronunciation.get_pronunciation(request)
-        return pronunciation_response (response=response)
+        return response
     
     except Exception as e:
         raise HTTPException (status_code=500, detail=str(e))
