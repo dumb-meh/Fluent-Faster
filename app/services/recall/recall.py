@@ -87,7 +87,6 @@ class Recall:
             return result
             
         except Exception as e:
-            error_msg = f"Main exception in get_recall: {str(e)}"
             # If we have data but TTS failed, return the sentences anyway
             if 'data' in locals() and data:
                 result = []
