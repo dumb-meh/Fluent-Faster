@@ -1,11 +1,12 @@
-from fastapi import APIRouter,HTTPException,Body
+from fastapi import APIRouter,HTTPException
+from typing import List
 from .pronunciation import Pronunciation
 from .pronunciation_schema import pronunciation_response,pronunciation_request
 
 router= APIRouter()
 pronunciation= Pronunciation()
 
-@router.post("/pronunciation",response_model=pronunciation_response)
+@router.post("/pronunciation",response_model= List[pronunciation_response])
 async def get_pronuncitation(request:pronunciation_request):
     try:
         response=pronunciation.get_pronunciation(request)

@@ -48,94 +48,105 @@ class ThreadSafeCounter:
             return self._value
 
 def generate_tts_direct(task: dict, feature) -> str:
-        """
-        Generate TTS directly using Azure Speech API (no HTTP calls)
-        """
-        try:
-            azure_key = os.getenv("AZURE_SPEECH_KEY")
-            azure_region = os.getenv("AZURE_SPEECH_REGION")
-            
-            if not azure_key or not azure_region:
-                return ""
-
-            token_endpoint = f"https://{azure_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
-            tts_endpoint = f"https://{azure_region}.tts.speech.microsoft.com/cognitiveservices/v1"
-            
-            headers = {"Ocp-Apim-Subscription-Key": azure_key}
-            token_response = requests.post(token_endpoint, headers=headers, timeout=10)
-            
-            if token_response.status_code != 200:
-                return ""
-            
-            token = token_response.text
-
-            ssml = f"""
-            <speak version='1.0' xml:lang='{task['language']}'>
-                <voice xml:lang='{task['language']}' xml:gender='Female' name='{task['voice_name']}'>
-                    {task['text']}
-                </voice>
-            </speak>
-            """
-
-            tts_headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/ssml+xml",
-                "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
-                "User-Agent": "fastapi-tts-app"
-            }
-            
-            tts_response = requests.post(tts_endpoint, headers=tts_headers, data=ssml.encode("utf-8"), timeout=15)
-            
-            if tts_response.status_code != 200:
-                return ""
-            
-            client = storage.Client()
-            bucket_name = os.getenv("BUCKET_NAME")
-            
-            if not bucket_name:
-                return ""
-            
-            bucket = client.bucket(bucket_name)
-            
-            timestamp = str(int(time.time() * 1000))
-            unique_id = str(uuid.uuid4())[:12]
-            filename = f"temp_audio_file/{feature}_{timestamp}_{unique_id}.wav"
-
-            blob = bucket.blob(filename)
-            blob.upload_from_string(
-                tts_response.content,
-                content_type="audio/wav"
-            )
-            
-            encoded_filename = filename.replace("/", "%2F")
-            audio_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_filename}?alt=media"
-            
-            return audio_url
-            
-        except Exception:
+    """
+    Generate TTS directly using Azure Speech API (no HTTP calls)
+    """
+    try:
+        azure_key = os.getenv("AZURE_SPEECH_KEY")
+        azure_region = os.getenv("AZURE_SPEECH_REGION")
+        
+        if not azure_key:
+            print("AZURE_SPEECH_KEY not found")
             return ""
-    
-def get_language_code(self, language: str) -> str:
+        if not azure_region:
+            print("AZURE_SPEECH_REGION not found")
+            return ""
+
+        token_endpoint = f"https://{azure_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
+        tts_endpoint = f"https://{azure_region}.tts.speech.microsoft.com/cognitiveservices/v1"
+        
+        headers = {"Ocp-Apim-Subscription-Key": azure_key}
+        token_response = requests.post(token_endpoint, headers=headers, timeout=10)
+        
+        if token_response.status_code != 200:
+            print(f"Token request failed with status {token_response.status_code}: {token_response.text}")
+            return ""
+        
+        token = token_response.text
+
+        ssml = f"""
+        <speak version='1.0' xml:lang='{task['language']}'>
+            <voice xml:lang='{task['language']}' xml:gender='Female' name='{task['voice_name']}'>
+                {task['text']}
+            </voice>
+        </speak>
         """
-        Convert language names to proper language codes
-        """
-        language_mapping = {
-            "spanish": "es-ES",
-            "french": "fr-FR",
-            "german": "de-DE", 
-            "italian": "it-IT",
-            "portuguese": "pt-BR",
-            "japanese": "ja-JP",
-            "korean": "ko-KR",
-            "chinese": "zh-CN",
-            "russian": "ru-RU",
-            "arabic": "ar-SA"
+
+        tts_headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/ssml+xml",
+            "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
+            "User-Agent": "fastapi-tts-app"
         }
         
-        if "-" in language:
-            return language
-            
-        return language_mapping.get(language.lower(), "es-ES") 
+        tts_response = requests.post(tts_endpoint, headers=tts_headers, data=ssml.encode("utf-8"), timeout=15)
+        
+        if tts_response.status_code != 200:
+            print(f"TTS request failed with status {tts_response.status_code}: {tts_response.text}")
+            return ""
+        
+        client = storage.Client()
+        bucket_name = os.getenv("BUCKET_NAME")
+        
+        if not bucket_name:
+            print("BUCKET_NAME not found")
+            return ""
+        
+        bucket = client.bucket(bucket_name)
+        
+        timestamp = str(int(time.time() * 1000))
+        unique_id = str(uuid.uuid4())[:12]
+        filename = f"temp_audio_file/{feature}_{timestamp}_{unique_id}.wav"
+
+        blob = bucket.blob(filename)
+        blob.upload_from_string(
+            tts_response.content,
+            content_type="audio/wav"
+        )
+        
+        encoded_filename = filename.replace("/", "%2F")
+        audio_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_filename}?alt=media"
+        
+        return audio_url
+        
+    except Exception as e:
+        # Store error in a way that can be accessed by calling function
+        error_msg = f"TTS Direct Error: {str(e)} | Type: {type(e).__name__}"
+        # You could also log to a file or external service here
+        print(error_msg)  # Keep this for local debugging
+        return ""
+
+def get_language_code(language: str) -> str:
+    """
+    Convert language names to proper language codes
+    """
+    language_mapping = {
+        "spanish": "es-ES",
+        "french": "fr-FR",
+        "german": "de-DE", 
+        "italian": "it-IT",
+        "portuguese": "pt-BR",
+        "japanese": "ja-JP",
+        "korean": "ko-KR",
+        "chinese": "zh-CN",
+        "russian": "ru-RU",
+        "arabic": "ar-SA"
+    }
+    
+    if "-" in language:
+        return language
+        
+    return language_mapping.get(language.lower(), "es-ES") 
 
 
 @router.post("/text_to_speech")

@@ -14,9 +14,6 @@ from google.cloud import storage
 
 load_dotenv()
 
-
-
-
 counter = ThreadSafeCounter()
 
 class Recall:
@@ -40,11 +37,15 @@ class Recall:
             
             result = []
             tts_tasks = []
+
+
             
             for i, item in enumerate(data):
                 base_timestamp = int(time.time())
                 counter_val = counter.get_next()
-                target_language_code =get_language_code(input_data.language)
+                target_language_code = get_language_code(input_data.language)
+                
+
                 
                 english_task = {
                     'text': item['english'],
@@ -70,9 +71,10 @@ class Recall:
                     'target_language_url': ''
                 })
             
-            # Process TTS requests sequentially
+
+            
             for task_type, task, index in tts_tasks:
-                try:
+                    
                     audio_url = generate_tts_direct(task,"recall")
                     
                     if audio_url:
@@ -80,13 +82,12 @@ class Recall:
                             result[index]['english_url'] = audio_url
                         else:
                             result[index]['target_language_url'] = audio_url
-                        
-                except Exception as e:
-                    print(f"TTS failed for {task_type} at index {index}: {str(e)}")
+
             
             return result
             
         except Exception as e:
+            error_msg = f"Main exception in get_recall: {str(e)}"
             # If we have data but TTS failed, return the sentences anyway
             if 'data' in locals() and data:
                 result = []
@@ -97,6 +98,7 @@ class Recall:
                         'english_url': '',
                         'target_language_url': ''
                     })
+
                 return result
             else:
                 return [{

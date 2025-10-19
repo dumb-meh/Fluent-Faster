@@ -23,20 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static file endpoint for audio files (backup option)
-@app.get("/temp_audio/{file_path:path}")
-async def serve_audio_file(file_path: str):
-    """Serve audio files from the mounted volume"""
-    full_path = f"/temp_audio/{file_path}"
-    
-    if not os.path.exists(full_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    return FileResponse(
-        path=full_path,
-        media_type="audio/wav",
-        filename=os.path.basename(file_path)
-    )
 
 app.include_router(association_router, prefix="/api")
 app.include_router(custom_phrases_router  , prefix="/api")

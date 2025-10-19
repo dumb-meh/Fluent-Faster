@@ -64,7 +64,7 @@ class Shadowing:
                 # Process TTS requests sequentially
                 for task_type, task, index in tts_tasks:
                     try:
-                        audio_url = generate_tts_direct(task, "pronunciation")
+                        audio_url = generate_tts_direct(task, "shadowing")
                         
                         if audio_url:
                             if task_type == 'english':
