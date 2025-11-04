@@ -146,7 +146,25 @@ def get_language_code(language: str) -> str:
     if "-" in language:
         return language
         
-    return language_mapping.get(language.lower(), "es-ES") 
+    return language_mapping.get(language.lower(), "es-ES")
+
+def get_voice_name(language: str) -> str:
+    """
+    Get the appropriate voice name for a given language
+    """
+    voice_mapping = {
+        "chinese": "zh-CN-XiaoxiaoMultilingualNeural",
+        "spanish": "es-MX-JorgeMultilingualNeural",
+        "french": "fr-FR-Remy:DragonHDLatestNeural",
+        "german": "de-DE-Florian:DragonHDLatestNeural",
+        "italian": "it-IT-GiuseppeMultilingualNeural",
+        "japanese": "ja-JP-Masaru:DragonHDLatestNeural",
+        "portuguese": "pt-BR-ThalitaMultilingualNeural",
+        "arabic": "ar-SA-HamedNeural",
+    }
+    
+    # Return specific voice if language is mapped, otherwise default to AvaMultilingualNeural
+    return voice_mapping.get(language.lower(), "en-US-AvaMultilingualNeural")
 
 
 @router.post("/text_to_speech")

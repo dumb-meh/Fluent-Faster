@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-from app.utils.text_to_speech import generate_tts_direct,get_language_code, ThreadSafeCounter
+from app.utils.text_to_speech import generate_tts_direct,get_language_code, get_voice_name, ThreadSafeCounter
 from .recall_schema import recall_response, recall_request
 from typing import List
 import time
@@ -44,6 +44,7 @@ class Recall:
                 base_timestamp = int(time.time())
                 counter_val = counter.get_next()
                 target_language_code = get_language_code(input_data.language)
+                target_voice_name = get_voice_name(input_data.language)
                 
 
                 
@@ -57,7 +58,7 @@ class Recall:
                 target_task = {
                     'text': item['target_language'],
                     'language': target_language_code,
-                    'voice_name': 'en-US-AvaMultilingualNeural',
+                    'voice_name': target_voice_name,
                     'unique_id': f"{base_timestamp}_{counter_val}_{i}_tg"
                 }
                 

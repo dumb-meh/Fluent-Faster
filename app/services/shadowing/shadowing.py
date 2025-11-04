@@ -5,7 +5,7 @@ import google.generativeai as genai
 from typing import List
 from dotenv import load_dotenv
 from .shadowing_schema import shadowing_response, shadowing_request
-from app.utils.text_to_speech import generate_tts_direct, get_language_code, ThreadSafeCounter
+from app.utils.text_to_speech import generate_tts_direct, get_language_code, get_voice_name, ThreadSafeCounter
 
 load_dotenv()
 
@@ -36,6 +36,7 @@ class Shadowing:
                 base_timestamp = int(time.time())
                 counter_val = counter.get_next()
                 target_language_code = get_language_code(input_data.language)
+                target_voice_name = get_voice_name(input_data.language)
                     
                 english_task = {
                     'text': item['english'],
@@ -47,7 +48,7 @@ class Shadowing:
                 target_task = {
                     'text': item['target_language'],
                     'language': target_language_code,
-                    'voice_name': 'en-US-AvaMultilingualNeural',
+                    'voice_name': target_voice_name,
                     'unique_id': f"{base_timestamp}_{counter_val}_{i}_tg"
                 }
                     
