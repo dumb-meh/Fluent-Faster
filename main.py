@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
@@ -14,6 +15,8 @@ from app.utils.text_to_speech import router as text_to_speech_router
 from app.utils.translate import router as translate_router
 
 app = FastAPI()
+
+app.mount("/temp_audio", StaticFiles(directory="/temp_audio"), name="temp_audio")
 
 app.add_middleware(
     CORSMiddleware,
