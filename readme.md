@@ -1,4 +1,4 @@
-# Fluent Faster API Backend
+# API Backend
 
 A comprehensive FastAPI backend service designed for language learning applications, providing multiple AI-powered features including pronunciation analysis, custom phrase generation, shadowing exercises, recall training, and association learning.
 
@@ -16,15 +16,6 @@ A comprehensive FastAPI backend service designed for language learning applicati
 - **Translation** (`/api/translate`) - Multi-language translation capabilities
 - **Sentence Regeneration** (`/api/regenerate-sentence`) - AI-powered sentence reconstruction
 
-## 🛠 Tech Stack
-
-- **Framework**: FastAPI
-- **Language**: Python 3.11
-- **AI/ML**: Google Generative AI, Groq
-- **Text-to-Speech**: Azure Cognitive Services
-- **Cloud Storage**: Google Cloud Storage
-- **Containerization**: Docker & Docker Compose
-- **Server**: Uvicorn ASGI
 
 ## 📋 Prerequisites
 
@@ -230,11 +221,3 @@ black .
 # Use flake8 or pylint for linting
 flake8 .
 ```
-
-## 📞 Support
-
-For support, email support@fluentfaster.com or create an issue in this repository.
-
----
-
-**Built with ❤️ for language learners worldwide**
