@@ -23,7 +23,9 @@ class Phrases:
     
     def create_prompt(self, input_data: custom_phrases_request) -> str:
         return f"""
-                You are an AI assistant that creates follow-up content for language learning. Based on the user's data, generate exactly {input_data.number_of_question} relevant, natural-sounding outputs. **You MUST return a valid JSON format as described below.**
+                You are an AI assistant that creates follow-up content for language learning. Based on the user's data, generate exactly {input_data.number_of_question} relevant, natural-sounding outputs. 
+                Make sure the questions are at an A1-B1 level and not overly lengthy. Make the questions concise while feeling very natural and native questions
+                **You MUST return a valid JSON format as described below.**
 
                 USER INFORMATION:
                 - Topic: {input_data.topic}
