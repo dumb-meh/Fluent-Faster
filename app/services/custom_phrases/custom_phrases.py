@@ -24,7 +24,6 @@ class Phrases:
     def create_prompt(self, input_data: custom_phrases_request) -> str:
         return f"""
                 You are an AI assistant that creates follow-up content for language learning. Based on the user's data, generate exactly {input_data.number_of_question} relevant, natural-sounding outputs. 
-                Make sure the questions are at an A1-B1 level and not overly lengthy. Make the questions concise while feeling very natural and native questions
                 **You MUST return a valid JSON format as described below.**
 
                 USER INFORMATION:
@@ -47,8 +46,8 @@ class Phrases:
                 - Return a JSON array of strings:
                 Example:
                 [
-                    "What exactly is blocking the project?",
-                    "How have you approached this with your boss before?"
+                    "What's the main issue?",
+                    "Have you talked to your boss?"
                 ]
 
                 INSTRUCTIONS:
@@ -59,8 +58,14 @@ class Phrases:
                 5. Do not include explanations, prefaces, or code
                 6. DO NOT use placeholders like [Name], [Thing], [Technique]. Always use realistic, fully written examples.
 
+                LANGUAGE LEVEL & STYLE:
+                - Keep questions SHORT and simple (A1-B1 level)
+                - Use everyday, natural language - avoid long or complex sentences
+                - Make the questions concise while feeling very natural and native
+                - Aim for 3-7 words per question when possible
+
                 QUESTION STRATEGY:
-                - Clarify or expand on the user’s responses
+                - Clarify or expand on the user's responses
                 - Ask about experiences, preferences, goals, or comparisons
                 - Be conversational and realistic
                 - For dialogue: simulate a natural back-and-forth interaction
