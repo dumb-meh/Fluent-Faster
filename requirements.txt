@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+python-dotenv
+groq
+pillow
+google-generativeai
+requests
+python-multipart
+typing
+google-cloud-storage
