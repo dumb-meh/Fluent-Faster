@@ -9,7 +9,10 @@ import threading
 from google.cloud import storage
 from google.oauth2 import service_account
 from datetime import datetime, timedelta
-import io
+import google.generativeai as genai
+import json
+import re
+from typing import List
 
 router = APIRouter()
 load_dotenv()
@@ -26,6 +29,12 @@ class TTSRequest(BaseModel):
     language: str = "en-US"
     voice_name: str = "en-US-ChristopherNeural"
     gender: str = "Male"
+
+
+class TranslationVoiceRequest(BaseModel):
+    sentence_list: List[str]
+    base_language: str
+    target_language: str
 
 
 def get_token(subscription_key: str) -> str:
@@ -131,6 +140,7 @@ def get_language_code(language: str) -> str:
     Convert language names to proper language codes
     """
     language_mapping = {
+        "english": "en-US",
         "spanish": "es-ES",
         "french": "fr-FR",
         "german": "de-DE", 
@@ -153,6 +163,7 @@ def get_voice_name(language: str) -> str:
     Get the appropriate voice name for a given language
     """
     voice_mapping = {
+        "english": "en-US-AvaMultilingualNeural",
         "chinese": "zh-CN-XiaoxiaoMultilingualNeural",
         "spanish": "es-MX-JorgeMultilingualNeural",
         "french": "fr-FR-Remy:DragonHDLatestNeural",
@@ -219,4 +230,104 @@ async def text_to_speech(request: TTSRequest):
             raise HTTPException(status_code=response.status_code, detail=f"TTS request failed: {response.text}")
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/translation_voice_generation")
+async def translation_voice_generation(request: TranslationVoiceRequest):
+    """
+    Translate a list of sentences and generate audio for both original and translated versions
+    """
+    try:
+        # Configure Gemini AI
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        
+        # Join sentences into a single text for translation
+        sentences_text = "\n".join(request.sentence_list)
+        
+        prompt = f"""You are a professional translator. Translate the following sentences from {request.base_language} to {request.target_language}.
+
+Original sentences:
+{sentences_text}
+
+Provide the translation maintaining the same number of sentences and similar meaning. Return the result as a JSON object with this exact format:
+{{"translated_sentences": ["sentence 1", "sentence 2", "sentence 3", ...]}}
+
+Translated sentences:"""
+
+        # Get translation from Gemini
+        response = model.generate_content(prompt)
+        raw_output = response.text.strip()
+        
+        # Extract JSON from response
+        match = re.search(r'\{.*\}', raw_output, re.DOTALL)
+        if not match:
+            raise ValueError("No JSON object found in the model response.")
+        
+        translation_json = json.loads(match.group(0))
+        translated_sentences = translation_json.get('translated_sentences', [])
+        
+        if len(translated_sentences) != len(request.sentence_list):
+            raise ValueError("Translation returned different number of sentences")
+        
+        # Initialize counter for unique file naming
+        counter = ThreadSafeCounter()
+        result = []
+        
+        # Process each sentence pair
+        for i, (original, translated) in enumerate(zip(request.sentence_list, translated_sentences)):
+            base_timestamp = int(time.time())
+            counter_val = counter.get_next()
+            
+            # Get language codes and voice names
+            base_language_code = get_language_code(request.base_language)
+            target_language_code = get_language_code(request.target_language)
+            base_voice_name = get_voice_name(request.base_language)
+            target_voice_name = get_voice_name(request.target_language)
+            
+            # Create TTS tasks
+            original_task = {
+                'text': original,
+                'language': base_language_code,
+                'voice_name': base_voice_name,
+                'unique_id': f"{base_timestamp}_{counter_val}_{i}_orig"
+            }
+            
+            translated_task = {
+                'text': translated,
+                'language': target_language_code,
+                'voice_name': target_voice_name,
+                'unique_id': f"{base_timestamp}_{counter_val}_{i}_trans"
+            }
+            
+            # Generate audio for both versions
+            original_audio_url = ""
+            translated_audio_url = ""
+            
+            try:
+                original_audio_url = generate_tts_direct(original_task, "translation")
+            except Exception as e:
+                print(f"Failed to generate audio for original sentence {i}: {str(e)}")
+            
+            try:
+                translated_audio_url = generate_tts_direct(translated_task, "translation")
+            except Exception as e:
+                print(f"Failed to generate audio for translated sentence {i}: {str(e)}")
+            
+            result.append({
+                'original_sentence': original,
+                'translated_sentence': translated,
+                'original_audio_url': original_audio_url,
+                'translated_audio_url': translated_audio_url
+            })
+        
+        return {
+            'base_language': request.base_language,
+            'target_language': request.target_language,
+            'sentence_pairs': result
+        }
+        
+    except Exception as e:
+        print(f"Translation voice generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

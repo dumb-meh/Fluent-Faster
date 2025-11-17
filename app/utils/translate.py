@@ -51,21 +51,21 @@ async def translate_text(
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
-        prompt = """You are a language learning assistant that creates practice sentences. Your task is to generate 5 sentences in a target language using provided words to help users practice vocabulary.
+        prompt = f"""You are a language learning assistant that creates practice sentences. Your task is to generate 5 sentences in a target language using provided words to help users practice vocabulary.
 
                 Here are some examples:
 
                 EXAMPLE 1:
                 Input: words="cat, happy, running", base_language="English", target_language="Spanish"
-                Output: {"words": "cat, happy, running", "translated_words": "gato, feliz, corriendo", "sentences": ["El gato está corriendo en el jardín.", "Mi gato se ve muy feliz hoy.", "El gato feliz está corriendo hacia mí.", "¿Por qué está corriendo el gato tan feliz?", "El gato corriendo parece estar feliz y saludable."]}
+                Output: {{"words": "cat, happy, running", "translated_words": "gato, feliz, corriendo", "sentences": ["El gato está corriendo en el jardín.", "Mi gato se ve muy feliz hoy.", "El gato feliz está corriendo hacia mí.", "¿Por qué está corriendo el gato tan feliz?", "El gato corriendo parece estar feliz y saludable."]}}
 
                 EXAMPLE 2:
                 Input: words="book, read, library", base_language="English", target_language="French"
-                Output: {"words": "book, read, library", "translated_words": "livre, lire, bibliothèque", "sentences": ["Je vais lire un livre à la bibliothèque.", "Ce livre de la bibliothèque est fascinant à lire.", "Où puis-je lire ce nouveau livre dans la bibliothèque?", "La bibliothèque a beaucoup de livres à lire.", "Elle aime lire des livres anciens à la bibliothèque."]}
+                Output: {{"words": "book, read, library", "translated_words": "livre, lire, bibliothèque", "sentences": ["Je vais lire un livre à la bibliothèque.", "Ce livre de la bibliothèque est fascinant à lire.", "Où puis-je lire ce nouveau livre dans la bibliothèque?", "La bibliothèque a beaucoup de livres à lire.", "Elle aime lire des livres anciens à la bibliothèque."]}}
 
                 EXAMPLE 3:
                 Input: words="water, drink, cold", base_language="English", target_language="German"
-                Output: {"words": "water, drink, cold", "translated_words": "Wasser, trinken, kalt", "sentences": ["Ich trinke gerne kaltes Wasser.", "Das Wasser ist zu kalt zum Trinken.", "Möchtest du kaltes Wasser trinken?", "Kaltes Wasser zu trinken ist erfrischend.", "Er trinkt jeden Morgen kaltes Wasser."]}
+                Output: {{"words": "water, drink, cold", "translated_words": "Wasser, trinken, kalt", "sentences": ["Ich trinke gerne kaltes Wasser.", "Das Wasser ist zu kalt zum Trinken.", "Möchtest du kaltes Wasser trinken?", "Kaltes Wasser zu trinken ist erfrischend.", "Er trinkt jeden Morgen kaltes Wasser."]}}
 
                 INSTRUCTIONS:
                 1. Incorporate ALL provided words naturally across 5 sentences
@@ -76,7 +76,9 @@ async def translate_text(
                 6. Ensure sentences aid vocabulary retention
 
                 Return only the JSON in this exact format:
-                {"words": "words that were provided", "translated_words": "words translated to target language", "sentences": [5 sentences in target language]}"""
+                {{"words": "words that were provided", "translated_words": "words translated to target language", "sentences": ["sentence 1", "sentence 2", "sentence 3", "sentence 4", "sentence 5"]}}
+                Now, generate 5 practice sentences using these words:
+                Input: words="{text}", base_language="{base_language}", target_language="{target_language}"""
 
         response = model.generate_content(prompt)     
         raw_output = response.text.strip()
