@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form
+from fastapi import APIRouter, HTTPException, Body
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
@@ -10,9 +10,9 @@ load_dotenv()
 
 @router.post("/translate")
 async def translate_text(
-    text: str = Form(...),
-    base_language: str = Form(...),
-    language: str = Form(...)
+    text: str = Body(...),
+    base_language: str = Body(...),
+    language: str = Body(...)
 ):
     try:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -43,33 +43,33 @@ async def translate_text(
     
 @router.post("/word_translation")
 async def translate_text(
-    text: str = Form(...),
-    base_language: str = Form(...),
-    target_language: str = Form(...)
+    text: str = Body(...),
+    base_language: str = Body(...),
+    target_language: str = Body(...)
 ):
     try:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
-        prompt = f"""You are a language learning assistant that creates practice sentences. Your task is to generate 5 sentences in a target language using provided words to help users practice vocabulary.
+        prompt = f"""You are a language learning assistant that creates practice sentences. Your task is to generate 5 sentences in the base language using provided words to help users practice vocabulary.
 
                 Here are some examples:
 
                 EXAMPLE 1:
                 Input: words="cat, happy, running", base_language="English", target_language="Spanish"
-                Output: {{"words": "cat, happy, running", "translated_words": "gato, feliz, corriendo", "sentences": ["El gato está corriendo en el jardín.", "Mi gato se ve muy feliz hoy.", "El gato feliz está corriendo hacia mí.", "¿Por qué está corriendo el gato tan feliz?", "El gato corriendo parece estar feliz y saludable."]}}
+                Output: {{"words": "cat, happy, running", "translated_words": "gato, feliz, corriendo", "sentences": ["The cat is running in the garden.", "My cat looks very happy today.", "The happy cat is running towards me.", "Why is the cat running so happily?", "The running cat seems to be happy and healthy."]}}
 
                 EXAMPLE 2:
                 Input: words="book, read, library", base_language="English", target_language="French"
-                Output: {{"words": "book, read, library", "translated_words": "livre, lire, bibliothèque", "sentences": ["Je vais lire un livre à la bibliothèque.", "Ce livre de la bibliothèque est fascinant à lire.", "Où puis-je lire ce nouveau livre dans la bibliothèque?", "La bibliothèque a beaucoup de livres à lire.", "Elle aime lire des livres anciens à la bibliothèque."]}}
+                Output: {{"words": "book, read, library", "translated_words": "livre, lire, bibliothèque", "sentences": ["I will read a book at the library.", "This book from the library is fascinating to read.", "Where can I read this new book in the library?", "The library has many books to read.", "She likes to read old books at the library."]}}
 
                 EXAMPLE 3:
                 Input: words="water, drink, cold", base_language="English", target_language="German"
-                Output: {{"words": "water, drink, cold", "translated_words": "Wasser, trinken, kalt", "sentences": ["Ich trinke gerne kaltes Wasser.", "Das Wasser ist zu kalt zum Trinken.", "Möchtest du kaltes Wasser trinken?", "Kaltes Wasser zu trinken ist erfrischend.", "Er trinkt jeden Morgen kaltes Wasser."]}}
+                Output: {{"words": "water, drink, cold", "translated_words": "Wasser, trinken, kalt", "sentences": ["I like to drink cold water.", "The water is too cold to drink.", "Would you like to drink cold water?", "Drinking cold water is refreshing.", "He drinks cold water every morning."]}}
 
                 INSTRUCTIONS:
                 1. Incorporate ALL provided words naturally across 5 sentences
-                2. Create grammatically correct sentences in the target language
+                2. Create grammatically correct sentences in the base language
                 3. Vary sentence complexity (simple, questions, compound structures)
                 4. Make sentences meaningful and contextually relevant
                 5. Distribute words across sentences (each word at least once)
