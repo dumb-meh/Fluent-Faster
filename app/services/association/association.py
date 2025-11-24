@@ -27,56 +27,49 @@ Chain of Thought Process:
 
 Hard rules:
 - Build a 1–3 part anchor chain from real English words that imitate the foreign word's sound in order
-- Write each anchor in bold inside the sentence
 - Anchors must be real English words or common phrases, not gibberish
 - Make the meaning unmistakable. Include the English meaning once
-- Include the foreign word once
+- Include the main foreign word once (ignore articles like "de", "la", "el", etc.)
 - Length 12–30 words. PG, funny, ridiculous, visual, memorable
 - Output exactly one sentence. No lists, options, or meta
+- Do not use any formatting like bold, italics, or special characters
 
 Few-shot examples:
 
 Input: "tubo - tube"
-Step 1: English word = tube, Foreign word = tubo
-Step 2: A plumber ties **two** **bow** tags on a pipe so tubo locks in as tube.
+A plumber ties two bow tags on a pipe so tubo locks in as tube.
 
-Input: "perro - dog"  
-Step 1: English word = dog, Foreign word = perro
-Step 2: At the shelter a **pair** **row** of leashes jerks tight, so perro sticks as dog.
+Input: "perro - dog"
+At the shelter a pair row of leashes jerks tight, so perro sticks as dog.
 
 Input: "cortar - to cut"
-Step 1: English word = to cut, Foreign word = cortar  
-Step 2: They slice sticky **court** **tar** with big shears, making cortar land as to cut.
+They slice sticky court tar with big shears, making cortar land as to cut.
 
 Input: "caro - expensive"
-Step 1: English word = expensive, Foreign word = caro
-Step 2: The dealer mutters **car** **oh** **no** at that price, so caro cements as expensive.
+The dealer mutters car oh no at that price, so caro cements as expensive.
 
 Input: "barato - cheap"
-Step 1: English word = cheap, Foreign word = barato
-Step 2: At the flea market a **bar** and a **toe** costs one coin, so barato means cheap.
+At the flea market a bar and a toe costs one coin, so barato means cheap.
 
 Input: "pan - bread"
-Step 1: English word = bread, Foreign word = pan
-Step 2: You swap a **pawn** ticket for warm loaves, so pan clicks as bread.
+You swap a pawn ticket for warm loaves, so pan clicks as bread.
 
 Input: "silla - chair"
-Step 1: English word = chair, Foreign word = silla
-Step 2: When you stand, friends shout **see** **ya** and point to the seat, so silla maps to chair.
+When you stand, friends shout see ya and point to the seat, so silla maps to chair.
 
 Input: "calle - street"
-Step 1: English word = street, Foreign word = calle
-Step 2: Lost downtown, you call **yay** when you find the road, so calle fixes as street.
+Lost downtown, you yell yay when you find the road, so calle fixes as street.
 
 Input: "beber - to drink"
-Step 1: English word = to drink, Foreign word = beber
-Step 2: On a hot beach you shout **bay** **bear** and chug water, so beber means to drink.
+On a hot beach you shout bay bear and chug water, so beber means to drink.
 
 Input: "dormir - to sleep"
-Step 1: English word = to sleep, Foreign word = dormir
-Step 2: You close the **door**, wish for **mere** silence, then drift off, so dormir means to sleep.
+You close the door, wish for mere silence, then drift off, so dormir means to sleep.
 
-Follow this chain of thought process: identify the words first, then create the mnemonic."""
+Input: "de fumar - to smoke"
+You few mar the air with cigarettes, so fumar means to smoke.
+
+Follow this process: identify the main foreign word (ignoring articles), then create a clean mnemonic sentence."""
 
 
 
