@@ -57,15 +57,15 @@ async def translate_text(
 
                 EXAMPLE 1:
                 Input: words="cat, happy, running", base_language="English", target_language="Spanish"
-                Output: {{"words": "cat, happy, running", "translated_words": "gato, feliz, corriendo", "sentences": ["The cat is running in the garden.", "My cat looks very happy today.", "The happy cat is running towards me.", "Why is the cat running so happily?", "The running cat seems to be happy and healthy."]}}
+                Output: [["cat", "gato", "The cat is running in the garden."], ["happy", "feliz", "My cat looks very happy today."], ["running", "corriendo", "The happy cat is running towards me."], ["cat", "gato", "Why is the cat running so happily?"], ["running", "corriendo", "The running cat seems to be happy and healthy."]]
 
                 EXAMPLE 2:
                 Input: words="book, read, library", base_language="English", target_language="French"
-                Output: {{"words": "book, read, library", "translated_words": "livre, lire, bibliothèque", "sentences": ["I will read a book at the library.", "This book from the library is fascinating to read.", "Where can I read this new book in the library?", "The library has many books to read.", "She likes to read old books at the library."]}}
+                Output: [["book", "livre", "I will read a book at the library."], ["read", "lire", "This book from the library is fascinating to read."], ["library", "bibliothèque", "Where can I read this new book in the library?"], ["book", "livre", "The library has many books to read."], ["read", "lire", "She likes to read old books at the library."]]
 
                 EXAMPLE 3:
                 Input: words="water, drink, cold", base_language="English", target_language="German"
-                Output: {{"words": "water, drink, cold", "translated_words": "Wasser, trinken, kalt", "sentences": ["I like to drink cold water.", "The water is too cold to drink.", "Would you like to drink cold water?", "Drinking cold water is refreshing.", "He drinks cold water every morning."]}}
+                Output: [["water", "Wasser", "I like to drink cold water."], ["drink", "trinken", "The water is too cold to drink."], ["cold", "kalt", "Would you like to drink cold water?"], ["drink", "trinken", "Drinking cold water is refreshing."], ["cold", "kalt", "He drinks cold water every morning."]]
 
                 INSTRUCTIONS:
                 1. Incorporate ALL provided words naturally across 5 sentences
@@ -75,17 +75,17 @@ async def translate_text(
                 5. Distribute words across sentences (each word at least once)
                 6. Ensure sentences aid vocabulary retention
 
-                Return only the JSON in this exact format:
-                {{"words": "words that were provided", "translated_words": "words translated to target language", "sentences": ["sentence 1", "sentence 2", "sentence 3", "sentence 4", "sentence 5"]}}
+                Return only the JSON array in this exact format:
+                [["word", "translated_word", "sentence"], ["word", "translated_word", "sentence"], ["word", "translated_word", "sentence"], ["word", "translated_word", "sentence"], ["word", "translated_word", "sentence"]]
                 Now, generate 5 practice sentences using these words:
                 Input: words="{text}", base_language="{base_language}", target_language="{target_language}"""
 
         response = model.generate_content(prompt)     
         raw_output = response.text.strip()
 
-        match = re.search(r'\{.*\}', raw_output)
+        match = re.search(r'\[.*\]', raw_output, re.DOTALL)
         if not match:
-            raise ValueError("No JSON object found in the model response.")
+            raise ValueError("No JSON array found in the model response.")
 
         response_json = json.loads(match.group(0))
         return response_json
